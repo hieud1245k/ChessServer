@@ -1,20 +1,29 @@
 package com.hieuminh.chessserver.configs
 
+import com.hieuminh.chessserver.ws.ChessmanActionHandler
+import com.hieuminh.chessserver.ws.InputNameHandler
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.messaging.simp.config.MessageBrokerRegistry
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+import org.springframework.web.socket.config.annotation.EnableWebSocket
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Configuration
-@EnableWebSocketMessageBroker
-class WebSocketConfig : WebSocketMessageBrokerConfigurer {
-    override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/ws").withSockJS()
+@EnableWebSocket
+class WebSocketConfig : WebSocketConfigurer {
+    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
+        registry
+            .addHandler(getInputNameHandler(), "/name")
+            .addHandler(getChessmanActionHandler(), "/chessman")
     }
 
-    override fun configureMessageBroker(registry: MessageBrokerRegistry) {
-        registry.setApplicationDestinationPrefixes("/app")
-        registry.enableSimpleBroker("/topic")
+    @Bean
+    fun getInputNameHandler(): InputNameHandler {
+        return InputNameHandler()
+    }
+
+    @Bean
+    fun getChessmanActionHandler(): ChessmanActionHandler {
+        return ChessmanActionHandler()
     }
 }

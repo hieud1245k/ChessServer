@@ -6,5 +6,5 @@ import javax.persistence.Entity
 @Entity(name = "players")
 class PlayerEntity : BaseEntity() {
     @Column(name = "name")
-    var username: String = ""
+    var name: String = ""
 }
