@@ -9,7 +9,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 class InputNameHandler : TextWebSocketHandler() {
     override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
         val name = message.payload.toString()
-        session.attributes[session.id] = name
+        session.attributes[name] = session
         session.sendMessage(TextMessage(name))
     }
 

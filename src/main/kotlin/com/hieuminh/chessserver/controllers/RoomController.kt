@@ -16,12 +16,17 @@ class RoomController(private val roomService: RoomService) {
     }
 
     @PostMapping("/")
-    fun createNew(): ResponseEntity<RoomEntity> {
-        return ResponseEntity(roomService.createNew(), HttpStatus.CREATED)
+    fun createNew(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
+        return ResponseEntity(roomService.createNew(name), HttpStatus.CREATED)
     }
 
     @GetMapping("/{id}")
     fun getRoom(@PathVariable id: Long): ResponseEntity<RoomEntity> {
         return ResponseEntity.ok(roomService.findById(id))
+    }
+
+    @PutMapping("/{id}")
+    fun joinRoom(@PathVariable id: Long, @RequestParam("name") name: String): ResponseEntity<RoomEntity> {
+        return ResponseEntity.ok(roomService.joinRoom(id, name))
     }
 }

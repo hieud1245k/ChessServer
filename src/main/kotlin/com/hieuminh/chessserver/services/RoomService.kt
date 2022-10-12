@@ -4,6 +4,7 @@ import com.hieuminh.chessserver.entities.RoomEntity
 
 interface RoomService {
     fun getAll(): List<RoomEntity>
-    fun createNew() : RoomEntity
-    fun findById(id: Long) : RoomEntity
+    fun createNew(name: String): RoomEntity
+    fun findById(id: Long): RoomEntity
+    fun joinRoom(id: Long, name: String): RoomEntity
 }
