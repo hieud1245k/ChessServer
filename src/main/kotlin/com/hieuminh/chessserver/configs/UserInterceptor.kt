@@ -10,7 +10,7 @@ import org.springframework.messaging.support.ChannelInterceptor
 import org.springframework.messaging.support.MessageHeaderAccessor
 
 class UserInterceptor : ChannelInterceptor {
-    override fun preSend(message: Message<*>, channel: MessageChannel): Message<*> {
+    override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
         val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
         if (StompCommand.CONNECT == accessor!!.command) {
             val raw = message.headers[SimpMessageHeaderAccessor.NATIVE_HEADERS]

@@ -1,29 +1,56 @@
 package com.hieuminh.chessserver.controllers
 
+import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.requests.ChessRequest
+import com.hieuminh.chessserver.services.PlayerService
+import com.hieuminh.chessserver.services.RoomService
+import com.hieuminh.chessserver.utils.AppUtils
 import com.hieuminh.chessserver.utils.JsonUtils
+import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
+import org.springframework.messaging.simp.annotation.SendToUser
 import org.springframework.stereotype.Controller
 
 @Controller
-class MessageController(private val messagingTemplate: SimpMessageSendingOperations) {
+class MessageController(
+    private val messagingTemplate: SimpMessageSendingOperations,
+    private val roomService: RoomService,
+    private val playerService: PlayerService,
+) {
+    private val random = java.util.Random()
 
     @MessageMapping("/add-username")
     fun addUser(@Payload username: String, headerAccessor: SimpMessageHeaderAccessor) {
-        headerAccessor.sessionAttributes?.put("username", username)
-        messagingTemplate.convertAndSendToUser(username, "/queue/add-username", username)
+        var response = username
+        try {
+            playerService.save(username)
+            headerAccessor.sessionAttributes?.put("username", username)
+        } catch (e: CustomException) {
+            if (e.httpStatus == HttpStatus.CONFLICT) {
+                response = "404"
+            }
+        } finally {
+            messagingTemplate.convertAndSend("/queue/add-username/${AppUtils.getPath(username)}", response)
+        }
     }
 
     @MessageMapping("/go-to-box")
-    @SendTo("/queue/go-to-box")
-    fun goToBox(@Payload message: String, headerAccessor: SimpMessageHeaderAccessor): String? {
-        val chessRequest = JsonUtils.fromJson<ChessRequest>(message) ?: return ""
+    fun goToBox(@Payload message: String, headerAccessor: SimpMessageHeaderAccessor) {
+        val chessRequest = JsonUtils.fromJson<ChessRequest>(message) ?: return
         chessRequest.reverse()
         val response = JsonUtils.toJson(chessRequest)
-        return response
+        messagingTemplate.convertAndSend("/queue/go-to-box/${chessRequest.roomId}", response)
+    }
+
+    @MessageMapping("/start-game")
+    fun startGame(@Payload message: String) {
+        val room = roomService.findById(message.toLong())
+        val randomBoolean = random.nextBoolean()
+        val firstPlayer = (if (randomBoolean) room.playerFirstName else room.playerSecondName) ?: ""
+        messagingTemplate.convertAndSend("/queue/start-game/${room.id}", firstPlayer)
     }
 }

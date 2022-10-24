@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/rooms")
-class RoomController(private val roomService: RoomService, private val messagingTemplate: SimpMessageSendingOperations) {
+class RoomController(
+    private val roomService: RoomService,
+    private val messagingTemplate: SimpMessageSendingOperations
+) {
 
     @GetMapping("/")
     fun getAll(): ResponseEntity<List<RoomEntity>> {
@@ -30,7 +33,7 @@ class RoomController(private val roomService: RoomService, private val messaging
     @PutMapping("/{id}")
     fun joinRoom(@PathVariable id: Long, @RequestParam("name") name: String): ResponseEntity<RoomEntity> {
         val room = roomService.joinRoom(id, name)
-        messagingTemplate.convertAndSend("/queue/join-room", Gson().toJson(room))
+        messagingTemplate.convertAndSend("/queue/join-room/${room.id}", Gson().toJson(room))
         return ResponseEntity.ok(room)
     }
 }

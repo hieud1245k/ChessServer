@@ -14,5 +14,7 @@ abstract class BaseEntity {
     var id: Long = 0
 
     @CreatedDate
-    var createdDate: LocalDate? = null
+    var createdAt: LocalDate? = null
+
+    var deletedAt: LocalDate? = null
 }
