@@ -13,7 +13,7 @@ class RoomServiceImpl(
     private val roomRepository: RoomRepository,
 ) : RoomService {
     override fun getAll(): List<RoomEntity> {
-        return roomRepository.findAll()
+        return roomRepository.findAllByDeletedAtNull()
     }
 
     override fun createNew(name: String): RoomEntity {

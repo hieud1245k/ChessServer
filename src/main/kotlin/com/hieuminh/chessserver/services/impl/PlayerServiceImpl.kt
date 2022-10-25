@@ -3,6 +3,7 @@ package com.hieuminh.chessserver.services.impl
 import com.hieuminh.chessserver.entities.PlayerEntity
 import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.repositories.PlayerRepository
+import com.hieuminh.chessserver.repositories.RoomRepository
 import com.hieuminh.chessserver.services.PlayerService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -11,6 +12,7 @@ import java.time.LocalDate
 @Service
 class PlayerServiceImpl(
     private val playerRepository: PlayerRepository,
+    private val roomRepository: RoomRepository,
 ) : PlayerService {
     override fun save(name: String): PlayerEntity {
         val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
@@ -27,5 +29,21 @@ class PlayerServiceImpl(
             ?: throw CustomException("", HttpStatus.NOT_FOUND)
         playerEntity.deletedAt = LocalDate.now()
         playerRepository.save(playerEntity)
+
+        val playerEntities = roomRepository.findAllByPlayerFirstNameOrPlayerSecondName(name, name)
+        playerEntities.forEach { roomEntity ->
+            when {
+                name == roomEntity.playerFirstName && roomEntity.playerSecondName != null -> {
+                    roomEntity.playerFirstName = null
+                }
+                name == roomEntity.playerSecondName && roomEntity.playerFirstName != null -> {
+                    roomEntity.playerSecondName = null
+                }
+                else -> {
+                    roomEntity.deletedAt = LocalDate.now()
+                }
+            }
+            roomRepository.save(roomEntity)
+        }
     }
 }

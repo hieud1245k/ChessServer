@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface RoomRepository : JpaRepository<RoomEntity, Long> {
+    fun findAllByDeletedAtNull(): List<RoomEntity>
+    fun findAllByPlayerFirstNameOrPlayerSecondName(firstName: String, secondName: String): List<RoomEntity>
 }
