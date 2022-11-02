@@ -8,7 +8,6 @@ import com.hieuminh.chessserver.services.RoomService
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
-import org.springframework.web.context.request.RequestContextHolder
 import java.time.LocalDate
 
 @Service
@@ -21,7 +20,6 @@ class RoomServiceImpl(
     }
 
     override fun createNew(name: String): RoomEntity {
-        val requestAttributes = RequestContextHolder.currentRequestAttributes()
         val roomEntity = RoomEntity()
         roomEntity.playerFirstName = name
         return roomRepository.save(roomEntity)
@@ -41,7 +39,14 @@ class RoomServiceImpl(
             throw CustomException("Room with id $id is not found!", HttpStatus.NOT_FOUND)
         }
         val room = roomOptional.get()
-        room.playerSecondName = name
+        if (room.playerFirstName != null && room.playerSecondName != null) {
+            throw CustomException("Room with id $id is full player!", HttpStatus.CONFLICT)
+        }
+        if (room.playerFirstName != null) {
+            room.playerSecondName = name
+        } else {
+            room.playerFirstName = name
+        }
         return roomRepository.save(room)
     }
 

@@ -8,7 +8,10 @@ class ChessRequest : Serializable {
     var to: BoxEntity? = null
 
     var playerName: String? = null
+
     var roomId: Long? = null
+
+    var checkmate: Boolean = false
 
     fun reverse() {
         from?.y = 7 - (from?.y ?: 0)
