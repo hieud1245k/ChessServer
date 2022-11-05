@@ -7,5 +7,6 @@ interface RoomService {
     fun createNew(name: String): RoomEntity
     fun findById(id: Long): RoomEntity
     fun joinRoom(id: Long, name: String): RoomEntity
-    fun removeByPlayerName(name : String)
+    fun removeByPlayerName(name: String)
+    fun leaveRoom(roomEntity: RoomEntity): RoomEntity
 }

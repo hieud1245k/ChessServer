@@ -68,4 +68,16 @@ class RoomServiceImpl(
             messagingTemplate.convertAndSend("/queue/join-room/${roomEntity.id}", Gson().toJson(roomEntity))
         }
     }
+
+    override fun leaveRoom(roomEntity: RoomEntity): RoomEntity {
+        if (roomEntity.id == 0L
+            || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null
+        ) {
+            throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
+        }
+        if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null) {
+            roomEntity.deletedAt = LocalDate.now()
+        }
+        return roomRepository.save(roomEntity)
+    }
 }
