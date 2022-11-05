@@ -26,7 +26,7 @@ class RoomServiceImpl(
     }
 
     override fun findById(id: Long): RoomEntity {
-        val room = roomRepository.findById(id)
+        val room = roomRepository.findByIdAndDeletedAtNull(id)
         if (room.isEmpty) {
             throw CustomException("Room with id $id is not found!", HttpStatus.NOT_FOUND)
         }
@@ -34,11 +34,7 @@ class RoomServiceImpl(
     }
 
     override fun joinRoom(id: Long, name: String): RoomEntity {
-        val roomOptional = roomRepository.findById(id)
-        if (roomOptional.isEmpty) {
-            throw CustomException("Room with id $id is not found!", HttpStatus.NOT_FOUND)
-        }
-        val room = roomOptional.get()
+        val room = findById(id)
         if (room.playerFirstName != null && room.playerSecondName != null) {
             throw CustomException("Room with id $id is full player!", HttpStatus.CONFLICT)
         }
@@ -67,5 +63,17 @@ class RoomServiceImpl(
             roomRepository.save(roomEntity)
             messagingTemplate.convertAndSend("/queue/join-room/${roomEntity.id}", Gson().toJson(roomEntity))
         }
+    }
+
+    override fun leaveRoom(roomEntity: RoomEntity): RoomEntity {
+        if (roomEntity.id == 0L
+            || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null
+        ) {
+            throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
+        }
+        if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null) {
+            roomEntity.deletedAt = LocalDate.now()
+        }
+        return roomRepository.save(roomEntity)
     }
 }

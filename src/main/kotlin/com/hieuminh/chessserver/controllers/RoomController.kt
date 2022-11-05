@@ -36,4 +36,11 @@ class RoomController(
         messagingTemplate.convertAndSend("/queue/join-room/${room.id}", Gson().toJson(room))
         return ResponseEntity.ok(room)
     }
+
+    @PutMapping("/leave")
+    fun leaveRoom(@RequestBody room: RoomEntity): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.leaveRoom(room)
+        messagingTemplate.convertAndSend("/queue/join-room/${roomResponse.id}", Gson().toJson(roomResponse))
+        return ResponseEntity.ok(roomResponse)
+    }
 }
