@@ -15,8 +15,10 @@ class RoomServiceImpl(
     private val roomRepository: RoomRepository,
     private val messagingTemplate: SimpMessageSendingOperations,
 ) : RoomService {
+    private val random = java.util.Random()
+
     override fun getAll(): List<RoomEntity> {
-        return roomRepository.findAllByDeletedAtNull()
+        return roomRepository.findAllByDeletedAtNullAndIsOnlineTrue()
     }
 
     override fun createNew(name: String): RoomEntity {
@@ -75,5 +77,13 @@ class RoomServiceImpl(
             roomEntity.deletedAt = LocalDate.now()
         }
         return roomRepository.save(roomEntity)
+    }
+
+    override fun startOfflineGame(name: String): RoomEntity {
+        val room = RoomEntity()
+        room.playerFirstName = name
+        room.isOnline = false
+        room.firstPlay = name.takeIf { random.nextBoolean() }
+        return roomRepository.save(room)
     }
 }

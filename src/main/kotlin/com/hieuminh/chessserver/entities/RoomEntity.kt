@@ -10,4 +10,10 @@ class RoomEntity : BaseEntity() {
 
     @Column(name = "player_second_name")
     var playerSecondName: String? = null
+
+    @Column(name = "first_play")
+    var firstPlay: String? = null
+
+    @Column(name = "is_online")
+    var isOnline: Boolean = true
 }

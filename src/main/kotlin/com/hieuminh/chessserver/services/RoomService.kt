@@ -9,4 +9,5 @@ interface RoomService {
     fun joinRoom(id: Long, name: String): RoomEntity
     fun removeByPlayerName(name: String)
     fun leaveRoom(roomEntity: RoomEntity): RoomEntity
+    fun startOfflineGame(name: String): RoomEntity
 }

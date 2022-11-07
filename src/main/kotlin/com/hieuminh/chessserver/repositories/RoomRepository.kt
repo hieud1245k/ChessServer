@@ -8,6 +8,7 @@ import java.util.Optional
 @Repository
 interface RoomRepository : JpaRepository<RoomEntity, Long> {
     fun findAllByDeletedAtNull(): List<RoomEntity>
+    fun findAllByDeletedAtNullAndIsOnlineTrue(): List<RoomEntity>
     fun findAllByPlayerFirstNameOrPlayerSecondName(firstName: String, secondName: String): List<RoomEntity>
     fun findByIdAndDeletedAtNull(id: Long): Optional<RoomEntity>
 }
