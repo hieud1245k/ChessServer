@@ -73,7 +73,7 @@ class RoomServiceImpl(
         ) {
             throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
         }
-        if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null) {
+        if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null || !roomEntity.isOnline) {
             roomEntity.deletedAt = LocalDate.now()
         }
         return roomRepository.save(roomEntity)
@@ -83,7 +83,11 @@ class RoomServiceImpl(
         val room = RoomEntity()
         room.playerFirstName = name
         room.isOnline = false
-        room.firstPlay = name.takeIf { random.nextBoolean() }
+        room.firstPlay = name
         return roomRepository.save(room)
+    }
+
+    override fun save(roomEntity: RoomEntity): RoomEntity {
+        return roomRepository.save(roomEntity)
     }
 }

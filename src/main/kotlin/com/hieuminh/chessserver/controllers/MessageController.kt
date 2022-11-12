@@ -9,10 +9,8 @@ import com.hieuminh.chessserver.utils.JsonUtils
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
-import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessageSendingOperations
-import org.springframework.messaging.simp.annotation.SendToUser
 import org.springframework.stereotype.Controller
 
 @Controller
@@ -52,5 +50,15 @@ class MessageController(
         val randomBoolean = random.nextBoolean()
         val firstPlayer = (if (randomBoolean) room.playerFirstName else room.playerSecondName) ?: ""
         messagingTemplate.convertAndSend("/queue/start-game/${room.id}", firstPlayer)
+    }
+
+    @MessageMapping("/offline/go-to-box")
+    fun goToBoxOffline(@Payload message: String, headerAccessor: SimpMessageHeaderAccessor) {
+        val chessRequest = JsonUtils.fromJson<ChessRequest>(message) ?: return
+        val chessResponse = playerService.gotoBoxOffline(chessRequest)
+        messagingTemplate.convertAndSend(
+            "/queue/offline/go-to-box/${chessRequest.roomId}",
+            JsonUtils.toJson(chessResponse),
+        )
     }
 }
