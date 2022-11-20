@@ -90,4 +90,25 @@ class RoomServiceImpl(
     override fun save(roomEntity: RoomEntity): RoomEntity {
         return roomRepository.save(roomEntity)
     }
+
+    override fun playNow(name: String): RoomEntity {
+        val optional =
+            roomRepository.findTop1ByDeletedAtNullAndIsOnlineTrueAndPlayerFirstNameNullOrPlayerSecondNameNull()
+        if (optional.isEmpty) {
+            throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+        }
+        val roomEntity = optional.get()
+        when {
+            roomEntity.playerFirstName == null && roomEntity.playerSecondName == null -> {
+                throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+            }
+            roomEntity.playerFirstName == null -> {
+                roomEntity.playerFirstName = name
+            }
+            roomEntity.playerSecondName == null -> {
+                roomEntity.playerSecondName = name
+            }
+        }
+        return roomRepository.save(roomEntity)
+    }
 }

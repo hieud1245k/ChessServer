@@ -11,4 +11,5 @@ interface RoomService {
     fun leaveRoom(roomEntity: RoomEntity): RoomEntity
     fun startOfflineGame(name: String): RoomEntity
     fun save(roomEntity: RoomEntity): RoomEntity
+    fun playNow(name: String): RoomEntity
 }

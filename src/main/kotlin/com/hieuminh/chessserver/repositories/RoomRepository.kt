@@ -11,4 +11,5 @@ interface RoomRepository : JpaRepository<RoomEntity, Long> {
     fun findAllByDeletedAtNullAndIsOnlineTrue(): List<RoomEntity>
     fun findAllByPlayerFirstNameOrPlayerSecondName(firstName: String, secondName: String): List<RoomEntity>
     fun findByIdAndDeletedAtNull(id: Long): Optional<RoomEntity>
+    fun findTop1ByDeletedAtNullAndIsOnlineTrueAndPlayerFirstNameNullOrPlayerSecondNameNull(): Optional<RoomEntity>
 }

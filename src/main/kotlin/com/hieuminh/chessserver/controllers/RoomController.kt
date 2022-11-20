@@ -49,4 +49,11 @@ class RoomController(
         val roomResponse = roomService.startOfflineGame(name)
         return ResponseEntity.ok(roomResponse)
     }
+
+    @PutMapping("/play-now")
+    fun playNow(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.playNow(name)
+        messagingTemplate.convertAndSend("/queue/join-room/${roomResponse.id}", Gson().toJson(roomResponse))
+        return ResponseEntity.ok(roomResponse)
+    }
 }
