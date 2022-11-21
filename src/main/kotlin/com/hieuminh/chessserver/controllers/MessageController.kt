@@ -38,10 +38,8 @@ class MessageController(
 
     @MessageMapping("/go-to-box")
     fun goToBox(@Payload message: String, headerAccessor: SimpMessageHeaderAccessor) {
-        val chessRequest = JsonUtils.fromJson<ChessRequest>(message) ?: return
-        chessRequest.reverse()
-        val response = JsonUtils.toJson(chessRequest)
-        messagingTemplate.convertAndSend("/queue/go-to-box/${chessRequest.roomId}", response)
+        val response = roomService.goToBox(message)
+        messagingTemplate.convertAndSend("/queue/go-to-box/${response.first}", response.second)
     }
 
     @MessageMapping("/start-game")

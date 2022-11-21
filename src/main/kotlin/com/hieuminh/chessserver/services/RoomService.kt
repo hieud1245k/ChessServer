@@ -12,4 +12,5 @@ interface RoomService {
     fun startOfflineGame(name: String): RoomEntity
     fun save(roomEntity: RoomEntity): RoomEntity
     fun playNow(name: String): RoomEntity
+    fun goToBox(message: String): Pair<Long, String>
 }

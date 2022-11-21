@@ -1,10 +1,13 @@
 package com.hieuminh.chessserver.services.impl
 
 import com.google.gson.Gson
+import com.hieuminh.chessserver.boardGame.BoardSpec.Companion.toBoard
 import com.hieuminh.chessserver.entities.RoomEntity
 import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.repositories.RoomRepository
+import com.hieuminh.chessserver.requests.ChessRequest
 import com.hieuminh.chessserver.services.RoomService
+import com.hieuminh.chessserver.utils.JsonUtils
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.stereotype.Service
@@ -68,9 +71,7 @@ class RoomServiceImpl(
     }
 
     override fun leaveRoom(roomEntity: RoomEntity): RoomEntity {
-        if (roomEntity.id == 0L
-            || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null
-        ) {
+        if (roomEntity.id == 0L || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null) {
             throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
         }
         if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null || !roomEntity.isOnline) {
@@ -110,5 +111,24 @@ class RoomServiceImpl(
             }
         }
         return roomRepository.save(roomEntity)
+    }
+
+    override fun goToBox(message: String): Pair<Long, String> {
+        val chessRequest =
+            JsonUtils.fromJson<ChessRequest>(message) ?: throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+        val room = findById(chessRequest.roomId ?: 0)
+        val board = room.boardString?.toBoard()
+        chessRequest.run {
+            try {
+                board?.play(from!!.toSquare(), to!!.toSquare())
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // TODO: Handle later
+            }
+        }
+        room.boardString = board?.toPrettyString()
+        roomRepository.save(room)
+        chessRequest.reverse()
+        return Pair(room.id, JsonUtils.toJson(chessRequest))
     }
 }
