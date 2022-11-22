@@ -61,7 +61,6 @@ class MinimaxPlayer(
     ): BoardValue {
         var betaValue: BoardValue = NodeBoardValue(moves.first(), beta)
         for (move in moves) {
-            // beta = min[beta, AlphaBeta(N_k,alpha,beta)]
             betaValue = min(
                 betaValue,
                 NodeBoardValue(
@@ -69,13 +68,11 @@ class MinimaxPlayer(
                     board.playAndUndo(move) { alphaBeta(depth - 1, board, alpha, betaValue.value) }.value
                 )
             )
-
-            // beta cutoff
+            // beta cut off
             if (alpha >= betaValue.value && betaValue is NodeBoardValue) {
                 return NodeBoardValue(betaValue.move, alpha)
             }
         }
-
         return betaValue
     }
 
@@ -90,7 +87,6 @@ class MinimaxPlayer(
     ): BoardValue {
         var moveValue: BoardValue = NodeBoardValue(moves.first(), alpha)
         for (move in moves) {
-            // alpha = max[alpha, AlphaBeta(N_k,alpha,beta)
             moveValue = max(
                 NodeBoardValue(
                     move,
@@ -98,13 +94,11 @@ class MinimaxPlayer(
                 ),
                 moveValue
             )
-
-            // alpha cutoff
+            // beta cut off
             if (moveValue.value >= beta && moveValue is NodeBoardValue) {
                 return NodeBoardValue(moveValue.move, beta)
             }
         }
-
         return moveValue
     }
 }
