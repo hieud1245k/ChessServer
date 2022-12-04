@@ -1,23 +1,62 @@
 package com.hieuminh.chessserver.entities
 
 import com.hieuminh.chessserver.boardGame.Yagoc
-import javax.persistence.*
+import com.hieuminh.chessserver.boardGame.pieces.PieceColor
+import javax.persistence.Entity
 
 @Entity(name = "rooms")
 class RoomEntity : BaseEntity() {
-
-    @Column(name = "player_first_name")
     var playerFirstName: String? = null
 
-    @Column(name = "player_second_name")
     var playerSecondName: String? = null
 
-    @Column(name = "first_play")
+    var isPlayerFirstMoveSuggestionsOn: Boolean = false
+
+    var isPlayerSecondMoveSuggestionsOn: Boolean = false
+
+    var firstLevel: Int = 1
+
+    var secondLevel: Int = 1
+
     var firstPlay: String? = null
 
-    @Column(name = "is_online")
     var isOnline: Boolean = true
 
-    @Column(name = "board_string")
     var boardString: String? = Yagoc.boardString
+
+    fun getRivalPlayerName(name: String?): String? {
+        if (name.equals(playerFirstName)) {
+            return playerSecondName
+        }
+        return playerFirstName
+    }
+
+    fun setIsMoveSuggestionsOn(playerName: String, isMoveSuggestionOn: Boolean, level: Int) {
+        when (playerName) {
+            playerFirstName -> {
+                isPlayerFirstMoveSuggestionsOn = isMoveSuggestionOn
+                firstLevel = level
+            }
+            playerSecondName -> {
+                isPlayerSecondMoveSuggestionsOn = isMoveSuggestionOn
+                secondLevel = level
+            }
+        }
+    }
+
+    fun getIsMoveSuggestionsOn(playerName: String): Boolean {
+        return when (playerName) {
+            playerFirstName -> isPlayerFirstMoveSuggestionsOn
+            playerSecondName -> isPlayerSecondMoveSuggestionsOn
+            else -> false
+        }
+    }
+
+    fun getPieceColor(playerName: String?): PieceColor {
+        return if (playerName == playerFirstName) {
+            PieceColor.WhiteSet
+        } else {
+            PieceColor.BlackSet
+        }
+    }
 }

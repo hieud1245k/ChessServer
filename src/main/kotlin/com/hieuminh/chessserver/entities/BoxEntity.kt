@@ -21,7 +21,12 @@ class BoxEntity : BaseEntity() {
         y = pair.second
     }
 
-    fun toSquare(): Square {
-        return Square((7 - y) * 8 + x)
+    fun toSquare(isFirstPlayer: Boolean = true): Square {
+        val y = if (isFirstPlayer) 7 - y else y
+        return Square(y * 8 + x)
+    }
+
+    override fun toString(): String {
+        return "($x,$y)"
     }
 }

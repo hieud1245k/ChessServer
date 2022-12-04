@@ -101,4 +101,18 @@ class MinimaxPlayer(
         }
         return moveValue
     }
+
+    fun getMoveSuggestions(board: BoardView): List<Move> {
+        val moves = generateMoves(board)
+        if (moves.size <= 3) {
+            return moves.toList()
+        }
+        val moveValues = moves.map { move ->
+            NodeBoardValue(
+                move,
+                board.playAndUndo(move) { alphaBeta(level, board, Int.MIN_VALUE, Int.MAX_VALUE) }.value
+            )
+        }.sortedByDescending { it.value }
+        return moveValues.subList(0, 3).map { it.move }
+    }
 }

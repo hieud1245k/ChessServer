@@ -2,6 +2,7 @@ package com.hieuminh.chessserver.controllers
 
 import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.requests.ChessRequest
+import com.hieuminh.chessserver.requests.SuggestRequest
 import com.hieuminh.chessserver.services.PlayerService
 import com.hieuminh.chessserver.services.RoomService
 import com.hieuminh.chessserver.utils.AppUtils
@@ -38,8 +39,18 @@ class MessageController(
 
     @MessageMapping("/go-to-box")
     fun goToBox(@Payload message: String, headerAccessor: SimpMessageHeaderAccessor) {
-        val response = roomService.goToBox(message)
-        messagingTemplate.convertAndSend("/queue/go-to-box/${response.first}", response.second)
+        val chessResponse = roomService.goToBox(message)
+        messagingTemplate.convertAndSend("/queue/go-to-box/${chessResponse.roomId}", JsonUtils.toJson(chessResponse))
+        if (true) {
+            val moveSuggestions = roomService.getMoveSuggestions(chessResponse)
+            val suggestRequest = SuggestRequest().apply {
+                suggestions = moveSuggestions
+            }
+            messagingTemplate.convertAndSend(
+                "/queue/get-move-suggestions/${chessResponse.playerName?.replace(" ", "-")}",
+                JsonUtils.toJson(suggestRequest),
+            )
+        }
     }
 
     @MessageMapping("/start-game")

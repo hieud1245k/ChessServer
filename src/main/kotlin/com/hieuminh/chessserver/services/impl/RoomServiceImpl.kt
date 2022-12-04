@@ -2,6 +2,8 @@ package com.hieuminh.chessserver.services.impl
 
 import com.google.gson.Gson
 import com.hieuminh.chessserver.boardGame.BoardSpec.Companion.toBoard
+import com.hieuminh.chessserver.boardGame.pieces.PieceColor
+import com.hieuminh.chessserver.boardGame.players.MinimaxPlayer
 import com.hieuminh.chessserver.entities.RoomEntity
 import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.repositories.RoomRepository
@@ -21,7 +23,7 @@ class RoomServiceImpl(
     private val random = java.util.Random()
 
     override fun getAll(): List<RoomEntity> {
-        return roomRepository.findAllByDeletedAtNullAndIsOnlineTrue()
+        return roomRepository.findAllByDeletedAtNullAndIsOnlineTrue().reversed()
     }
 
     override fun createNew(name: String): RoomEntity {
@@ -113,22 +115,51 @@ class RoomServiceImpl(
         return roomRepository.save(roomEntity)
     }
 
-    override fun goToBox(message: String): Pair<Long, String> {
+    override fun goToBox(message: String): ChessRequest {
         val chessRequest =
             JsonUtils.fromJson<ChessRequest>(message) ?: throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
         val room = findById(chessRequest.roomId ?: 0)
+        val boardString = room.boardString
         val board = room.boardString?.toBoard()
+        val isFirstPlayer = chessRequest.playerName.equals(room.playerFirstName)
         chessRequest.run {
+            val fromSquare = from!!.toSquare(isFirstPlayer)
+            val toSquare = to!!.toSquare(isFirstPlayer)
             try {
-                board?.play(from!!.toSquare(), to!!.toSquare())
+                board?.play(fromSquare, toSquare)
             } catch (e: Exception) {
                 e.printStackTrace()
                 // TODO: Handle later
+            } finally {
+                room.setIsMoveSuggestionsOn(playerName ?: "", isMoveSuggestionsOn, level)
             }
         }
         room.boardString = board?.toPrettyString()
         roomRepository.save(room)
         chessRequest.reverse()
-        return Pair(room.id, JsonUtils.toJson(chessRequest))
+        chessRequest.roomEntity = room
+        return chessRequest
+    }
+
+    override fun getMoveSuggestions(chessRequest: ChessRequest): List<ChessRequest> {
+        val room = findById(chessRequest.roomId ?: 0)
+        val board = (room.boardString ?: "").toBoard()
+        val minimaxPlayer = MinimaxPlayer(room.getPieceColor(chessRequest.playerName), 4)
+        when (minimaxPlayer.pieceColor) {
+            PieceColor.BlackSet -> board.blackPlayer(minimaxPlayer)
+            PieceColor.WhiteSet -> board.whitePlayer(minimaxPlayer)
+        }
+        board.setCurrentPlayer(minimaxPlayer)
+        val moveSuggestions = minimaxPlayer.getMoveSuggestions(board)
+        val result = moveSuggestions.map { move ->
+            ChessRequest().apply {
+                from = move.from.toBoxEntity()
+                to = move.to.toBoxEntity()
+                if (minimaxPlayer.pieceColor == PieceColor.BlackSet) {
+                    reversePosition()
+                }
+            }
+        }
+        return result
     }
 }

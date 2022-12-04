@@ -90,12 +90,15 @@ object BoardRules {
 
     @JvmStatic
     fun generateMoves(board: BoardView): Collection<Move> {
-        return allSquares.flatMap { from: Square ->
+        val result = mutableListOf<Move>()
+        allSquares.forEach { from ->
             if (board.isPieceOfCurrentPlayer(board.pieceAt(from))) {
-                generateMoves(board, from) { move: Move -> moveDoesNotCreateCheck(board, move) }.toList()
-            } else {
-                emptyList()
+                val childList = generateMoves(board, from) { move: Move ->
+                    moveDoesNotCreateCheck(board, move)
+                }.toList()
+                result.addAll(childList)
             }
         }
+        return result
     }
 }

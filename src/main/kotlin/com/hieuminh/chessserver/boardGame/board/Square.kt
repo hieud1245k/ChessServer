@@ -1,8 +1,8 @@
 package com.hieuminh.chessserver.boardGame.board
 
 import com.hieuminh.chessserver.boardGame.pieces.PieceColor
+import com.hieuminh.chessserver.entities.BoxEntity
 import java.io.Serializable
-import java.util.*
 import java.util.stream.Collectors
 
 data class Square(val arrayPosition: Int) : Serializable, Comparable<Square> {
@@ -119,6 +119,11 @@ data class Square(val arrayPosition: Int) : Serializable, Comparable<Square> {
         val x = Move.FILE_NAMES[file].first().code - 97
         val y = Move.RANK_NAMES[rank].first().code - 49
         return Pair(x, y)
+    }
+
+    fun toBoxEntity() = BoxEntity().apply {
+        val position = toPosition()
+        setPosition(position)
     }
 
     override fun toString(): String {

@@ -5,8 +5,8 @@ import com.hieuminh.chessserver.boardGame.board.Move.Companion.move
 import com.hieuminh.chessserver.boardGame.board.MoveLog.Companion.castling
 import com.hieuminh.chessserver.boardGame.board.MoveLog.Companion.enPassant
 import com.hieuminh.chessserver.boardGame.board.MoveLog.Companion.normalMove
-import com.hieuminh.chessserver.boardGame.pieces.*
 import com.hieuminh.chessserver.boardGame.defaultSettings
+import com.hieuminh.chessserver.boardGame.pieces.*
 import com.hieuminh.chessserver.boardGame.players.MinimaxPlayer
 import com.hieuminh.chessserver.boardGame.players.Player
 import com.hieuminh.chessserver.boardGame.players.UserPlayer
@@ -109,6 +109,10 @@ class Board : BoardView {
 
     fun whitePlayer(): Player {
         return whitePlayer
+    }
+
+    fun setCurrentPlayer(player: Player) {
+        currentPlayer = player
     }
 
     fun whitePlayer(player: Player) {
