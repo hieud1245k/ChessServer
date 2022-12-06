@@ -21,8 +21,8 @@ class RoomController(
     }
 
     @PostMapping("/")
-    fun createNew(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
-        return ResponseEntity(roomService.createNew(name), HttpStatus.CREATED)
+    fun createNew(@RequestParam("player_id") playerId: Long): ResponseEntity<RoomEntity> {
+        return ResponseEntity(roomService.createNew(playerId), HttpStatus.CREATED)
     }
 
     @GetMapping("/{id}")
@@ -31,8 +31,8 @@ class RoomController(
     }
 
     @PutMapping("/{id}")
-    fun joinRoom(@PathVariable id: Long, @RequestParam("name") name: String): ResponseEntity<RoomEntity> {
-        val room = roomService.joinRoom(id, name)
+    fun joinRoom(@PathVariable roomId: Long, @RequestParam("player_id") playerId: Long): ResponseEntity<RoomEntity> {
+        val room = roomService.joinRoom(roomId, playerId)
         messagingTemplate.convertAndSend("/queue/join-room/${room.id}", Gson().toJson(room))
         return ResponseEntity.ok(room)
     }
@@ -45,14 +45,14 @@ class RoomController(
     }
 
     @PostMapping("/start-offline-game")
-    fun startOfflineGame(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
-        val roomResponse = roomService.startOfflineGame(name)
+    fun startOfflineGame(@RequestParam("player_id") playerId: Long): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.startOfflineGame(playerId)
         return ResponseEntity.ok(roomResponse)
     }
 
     @PutMapping("/play-now")
-    fun playNow(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
-        val roomResponse = roomService.playNow(name)
+    fun playNow(@RequestParam("player_id") playerId: Long): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.playNow(playerId)
         messagingTemplate.convertAndSend("/queue/join-room/${roomResponse.id}", Gson().toJson(roomResponse))
         return ResponseEntity.ok(roomResponse)
     }

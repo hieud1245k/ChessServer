@@ -4,13 +4,13 @@ import com.hieuminh.chessserver.entities.RoomEntity
 
 interface RoomService {
     fun getAll(): List<RoomEntity>
-    fun createNew(name: String): RoomEntity
-    fun findById(id: Long): RoomEntity
-    fun joinRoom(id: Long, name: String): RoomEntity
-    fun removeByPlayerName(name: String)
+    fun createNew(playerId: Long): RoomEntity
+    fun findById(roomId: Long): RoomEntity
+    fun joinRoom(roomId: Long, playerId: Long): RoomEntity
+    fun removeByPlayerId(playerId: Long)
     fun leaveRoom(roomEntity: RoomEntity): RoomEntity
-    fun startOfflineGame(name: String): RoomEntity
+    fun startOfflineGame(playerId: Long): RoomEntity
     fun save(roomEntity: RoomEntity): RoomEntity
-    fun playNow(name: String): RoomEntity
+    fun playNow(playerId: Long): RoomEntity
     fun goToBox(message: String): Pair<Long, String>
 }

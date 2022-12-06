@@ -22,18 +22,26 @@ class PlayerServiceImpl(
     override fun save(name: String): PlayerEntity {
         val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
         if (playerEntity != null) {
-            throw CustomException("Username \"${name}\" is exist!", HttpStatus.CONFLICT)
+            throw CustomException("Player with name \"${name}\" is exist!", HttpStatus.CONFLICT)
         }
         return playerRepository.save(PlayerEntity().apply {
             this.name = name
         })
     }
 
-    override fun removeByName(name: String) {
-        val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
+    override fun removeById(playerId: Long) {
+        val playerEntity = playerRepository.findByIdAndDeletedAtNull(playerId)
             ?: throw CustomException("", HttpStatus.NOT_FOUND)
         playerEntity.deletedAt = LocalDate.now()
         playerRepository.save(playerEntity)
+    }
+
+    override fun removeByName(name: String): Long {
+        val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
+            ?: throw CustomException("Player with name \"${name}\" is not exist!", HttpStatus.BAD_REQUEST)
+        playerEntity.isActive = false
+        playerRepository.save(playerEntity)
+        return playerEntity.id
     }
 
     override fun gotoBoxOffline(chessRequest: ChessRequest): ChessRequest {

@@ -4,7 +4,6 @@ import com.hieuminh.chessserver.services.PlayerService
 import com.hieuminh.chessserver.services.RoomService
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
-import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.messaging.SessionConnectedEvent
@@ -25,8 +24,8 @@ class WebSocketEventListener(
     fun handleWebSocketDisconnectListener(event: SessionDisconnectEvent) {
         val headerAccessor: StompHeaderAccessor = StompHeaderAccessor.wrap(event.message)
         val username = headerAccessor.sessionAttributes?.get("username") as? String ?: return
-        playerService.removeByName(username)
-        roomService.removeByPlayerName(username)
+        val playerId = playerService.removeByName(username)
+        roomService.removeByPlayerId(playerId)
     }
 
     companion object {

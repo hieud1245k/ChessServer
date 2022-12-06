@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PlayerRepository : JpaRepository<PlayerEntity, Long> {
     fun findByNameAndDeletedAtNull(name: String): PlayerEntity?
+
+    fun findByIdAndDeletedAtNull(playerId: Long): PlayerEntity?
 }

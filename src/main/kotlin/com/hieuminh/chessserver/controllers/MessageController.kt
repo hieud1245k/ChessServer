@@ -23,9 +23,10 @@ class MessageController(
 
     @MessageMapping("/add-username")
     fun addUser(@Payload username: String, headerAccessor: SimpMessageHeaderAccessor) {
-        var response = username
+        var response = ""
         try {
-            playerService.save(username)
+            val playerEntity = playerService.save(username)
+            response = JsonUtils.toJson(playerEntity)
             headerAccessor.sessionAttributes?.put("username", username)
         } catch (e: CustomException) {
             if (e.httpStatus == HttpStatus.CONFLICT) {
@@ -46,7 +47,7 @@ class MessageController(
     fun startGame(@Payload message: String) {
         val room = roomService.findById(message.toLong())
         val randomBoolean = random.nextBoolean()
-        val firstPlayer = (if (randomBoolean) room.playerFirstName else room.playerSecondName) ?: ""
+        val firstPlayer = (if (randomBoolean) room.playerFirstId else room.playerSecondId) ?: ""
         messagingTemplate.convertAndSend("/queue/start-game/${room.id}", firstPlayer)
     }
 

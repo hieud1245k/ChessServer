@@ -24,42 +24,42 @@ class RoomServiceImpl(
         return roomRepository.findAllByDeletedAtNullAndIsOnlineTrue()
     }
 
-    override fun createNew(name: String): RoomEntity {
+    override fun createNew(playerId: Long): RoomEntity {
         val roomEntity = RoomEntity()
-        roomEntity.playerFirstName = name
+        roomEntity.playerFirstId = playerId
         return roomRepository.save(roomEntity)
     }
 
-    override fun findById(id: Long): RoomEntity {
-        val room = roomRepository.findByIdAndDeletedAtNull(id)
+    override fun findById(roomId: Long): RoomEntity {
+        val room = roomRepository.findByIdAndDeletedAtNull(roomId)
         if (room.isEmpty) {
-            throw CustomException("Room with id $id is not found!", HttpStatus.NOT_FOUND)
+            throw CustomException("Room with id $roomId is not found!", HttpStatus.NOT_FOUND)
         }
         return room.get()
     }
 
-    override fun joinRoom(id: Long, name: String): RoomEntity {
-        val room = findById(id)
-        if (room.playerFirstName != null && room.playerSecondName != null) {
-            throw CustomException("Room with id $id is full player!", HttpStatus.CONFLICT)
+    override fun joinRoom(roomId: Long, playerId: Long): RoomEntity {
+        val room = findById(roomId)
+        if (room.playerFirstId != null && room.playerSecondId != null) {
+            throw CustomException("Room with id $roomId is full player!", HttpStatus.CONFLICT)
         }
-        if (room.playerFirstName != null) {
-            room.playerSecondName = name
+        if (room.playerFirstId != null) {
+            room.playerSecondId = playerId
         } else {
-            room.playerFirstName = name
+            room.playerFirstId = playerId
         }
         return roomRepository.save(room)
     }
 
-    override fun removeByPlayerName(name: String) {
-        val playerEntities = roomRepository.findAllByPlayerFirstNameOrPlayerSecondName(name, name)
+    override fun removeByPlayerId(playerId: Long) {
+        val playerEntities = roomRepository.findAllByPlayerFirstIdOrPlayerSecondId(playerId, playerId)
         playerEntities.forEach { roomEntity ->
             when {
-                name == roomEntity.playerFirstName && roomEntity.playerSecondName != null -> {
-                    roomEntity.playerFirstName = null
+                playerId == roomEntity.playerFirstId && roomEntity.playerSecondId != null -> {
+                    roomEntity.playerFirstId = null
                 }
-                name == roomEntity.playerSecondName && roomEntity.playerFirstName != null -> {
-                    roomEntity.playerSecondName = null
+                playerId == roomEntity.playerSecondId && roomEntity.playerFirstId != null -> {
+                    roomEntity.playerSecondId = null
                 }
                 else -> {
                     roomEntity.deletedAt = LocalDate.now()
@@ -71,20 +71,20 @@ class RoomServiceImpl(
     }
 
     override fun leaveRoom(roomEntity: RoomEntity): RoomEntity {
-        if (roomEntity.id == 0L || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null) {
+        if (roomEntity.id == 0L || roomEntity.playerFirstId != null && roomEntity.playerSecondId != null) {
             throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
         }
-        if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null || !roomEntity.isOnline) {
+        if (roomEntity.playerFirstId == null && roomEntity.playerSecondId == null || !roomEntity.isOnline) {
             roomEntity.deletedAt = LocalDate.now()
         }
         return roomRepository.save(roomEntity)
     }
 
-    override fun startOfflineGame(name: String): RoomEntity {
+    override fun startOfflineGame(playerId: Long): RoomEntity {
         val room = RoomEntity()
-        room.playerFirstName = name
+        room.playerFirstId = playerId
         room.isOnline = false
-        room.firstPlay = name
+        room.firstPlay = playerId
         return roomRepository.save(room)
     }
 
@@ -92,22 +92,22 @@ class RoomServiceImpl(
         return roomRepository.save(roomEntity)
     }
 
-    override fun playNow(name: String): RoomEntity {
+    override fun playNow(playerId: Long): RoomEntity {
         val optional =
-            roomRepository.findTop1ByDeletedAtNullAndIsOnlineTrueAndPlayerFirstNameNullOrPlayerSecondNameNull()
+            roomRepository.findTop1ByDeletedAtNullAndIsOnlineTrueAndPlayerFirstIdNullOrPlayerSecondIdNull()
         if (optional.isEmpty) {
             throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
         }
         val roomEntity = optional.get()
         when {
-            roomEntity.playerFirstName == null && roomEntity.playerSecondName == null -> {
+            roomEntity.playerFirstId == null && roomEntity.playerSecondId == null -> {
                 throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
             }
-            roomEntity.playerFirstName == null -> {
-                roomEntity.playerFirstName = name
+            roomEntity.playerFirstId == null -> {
+                roomEntity.playerFirstId = playerId
             }
-            roomEntity.playerSecondName == null -> {
-                roomEntity.playerSecondName = name
+            roomEntity.playerSecondId == null -> {
+                roomEntity.playerSecondId = playerId
             }
         }
         return roomRepository.save(roomEntity)
