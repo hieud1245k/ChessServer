@@ -3,6 +3,7 @@ package com.hieuminh.chessserver.controllers
 import com.google.gson.Gson
 import com.hieuminh.chessserver.entities.RoomEntity
 import com.hieuminh.chessserver.services.RoomService
+import com.hieuminh.chessserver.utils.AppUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.simp.SimpMessageSendingOperations
@@ -54,6 +55,19 @@ class RoomController(
     fun playNow(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
         val roomResponse = roomService.playNow(name)
         messagingTemplate.convertAndSend("/queue/join-room/${roomResponse.id}", Gson().toJson(roomResponse))
+        return ResponseEntity.ok(roomResponse)
+    }
+
+    @PutMapping("/kick")
+    fun kickTheOpponent(
+        @RequestBody room: RoomEntity,
+        @RequestParam("rival_name") rivalName: String,
+    ): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.kickTheOpponent(room, rivalName)
+        messagingTemplate.convertAndSend(
+            "/queue/kick/${roomResponse.id}/${AppUtils.getPath(rivalName)}",
+            Gson().toJson(roomResponse)
+        )
         return ResponseEntity.ok(roomResponse)
     }
 }

@@ -1,11 +1,11 @@
 package com.hieuminh.chessserver.requests
 
-import com.hieuminh.chessserver.entities.BoxEntity
+import com.hieuminh.chessserver.entities.Box
 import java.io.Serializable
 
 class ChessRequest : Serializable {
-    var from: BoxEntity? = null
-    var to: BoxEntity? = null
+    var from: Box? = null
+    var to: Box? = null
 
     var playerName: String? = null
 

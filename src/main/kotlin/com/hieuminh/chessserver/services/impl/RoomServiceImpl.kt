@@ -131,4 +131,11 @@ class RoomServiceImpl(
         chessRequest.reverse()
         return Pair(room.id, JsonUtils.toJson(chessRequest))
     }
+
+    override fun kickTheOpponent(roomEntity: RoomEntity, rivalName: String): RoomEntity {
+        if (!roomEntity.isFullPlayer() || !roomEntity.removeRivalPlayerName(rivalName)) {
+            throw CustomException("", HttpStatus.BAD_REQUEST)
+        }
+        return roomRepository.save(roomEntity)
+    }
 }

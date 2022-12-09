@@ -3,7 +3,7 @@ package com.hieuminh.chessserver.services.impl
 import com.hieuminh.chessserver.boardGame.BoardSpec.Companion.toBoard
 import com.hieuminh.chessserver.boardGame.pieces.PieceColor
 import com.hieuminh.chessserver.boardGame.players.MinimaxPlayer
-import com.hieuminh.chessserver.entities.BoxEntity
+import com.hieuminh.chessserver.entities.Box
 import com.hieuminh.chessserver.entities.PlayerEntity
 import com.hieuminh.chessserver.exceptions.CustomException
 import com.hieuminh.chessserver.repositories.PlayerRepository
@@ -44,10 +44,10 @@ class PlayerServiceImpl(
         board.blackPlayer(minimaxPlayer)
         val boardValue = minimaxPlayer.move(board)
         val chessResponse = ChessRequest().apply {
-            from = BoxEntity().apply {
+            from = Box().apply {
                 setPosition(boardValue.from.toPosition())
             }
-            to = BoxEntity().apply {
+            to = Box().apply {
                 setPosition(boardValue.to.toPosition())
             }
         }
