@@ -1,5 +1,6 @@
 package com.hieuminh.chessserver.services
 
+import com.hieuminh.chessserver.entities.PlayerEntity
 import com.hieuminh.chessserver.entities.RoomEntity
 
 interface RoomService {
@@ -9,7 +10,7 @@ interface RoomService {
     fun joinRoom(id: Long, name: String): RoomEntity
     fun removeByPlayerName(name: String)
     fun leaveRoom(roomEntity: RoomEntity): RoomEntity
-    fun startOfflineGame(name: String): RoomEntity
+    fun startOfflineGame(playerEntity: PlayerEntity): RoomEntity
     fun save(roomEntity: RoomEntity): RoomEntity
     fun playNow(name: String): RoomEntity
     fun goToBox(message: String): Pair<Long, String>

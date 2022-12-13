@@ -2,8 +2,10 @@ package com.hieuminh.chessserver.services.impl
 
 import com.google.gson.Gson
 import com.hieuminh.chessserver.boardGame.BoardSpec.Companion.toBoard
+import com.hieuminh.chessserver.entities.PlayerEntity
 import com.hieuminh.chessserver.entities.RoomEntity
 import com.hieuminh.chessserver.exceptions.CustomException
+import com.hieuminh.chessserver.repositories.PlayerRepository
 import com.hieuminh.chessserver.repositories.RoomRepository
 import com.hieuminh.chessserver.requests.ChessRequest
 import com.hieuminh.chessserver.services.RoomService
@@ -16,6 +18,7 @@ import java.time.LocalDate
 @Service
 class RoomServiceImpl(
     private val roomRepository: RoomRepository,
+    private val playerRepository: PlayerRepository,
     private val messagingTemplate: SimpMessageSendingOperations,
 ) : RoomService {
     private val random = java.util.Random()
@@ -33,7 +36,7 @@ class RoomServiceImpl(
     override fun findById(id: Long): RoomEntity {
         val room = roomRepository.findByIdAndDeletedAtNull(id)
         if (room.isEmpty) {
-            throw CustomException("Room with id $id is not found!", HttpStatus.NOT_FOUND)
+            throw CustomException(HttpStatus.NOT_FOUND, "Room with id $id is not found!")
         }
         return room.get()
     }
@@ -41,7 +44,7 @@ class RoomServiceImpl(
     override fun joinRoom(id: Long, name: String): RoomEntity {
         val room = findById(id)
         if (room.playerFirstName != null && room.playerSecondName != null) {
-            throw CustomException("Room with id $id is full player!", HttpStatus.CONFLICT)
+            throw CustomException(HttpStatus.CONFLICT, "Room with id $id is full player!")
         }
         if (room.playerFirstName != null) {
             room.playerSecondName = name
@@ -72,7 +75,7 @@ class RoomServiceImpl(
 
     override fun leaveRoom(roomEntity: RoomEntity): RoomEntity {
         if (roomEntity.id == 0L || roomEntity.playerFirstName != null && roomEntity.playerSecondName != null) {
-            throw CustomException("Data is invalid!", HttpStatus.BAD_REQUEST)
+            throw CustomException(HttpStatus.BAD_REQUEST, "Data is invalid!")
         }
         if (roomEntity.playerFirstName == null && roomEntity.playerSecondName == null || !roomEntity.isOnline) {
             roomEntity.deletedAt = LocalDate.now()
@@ -80,11 +83,15 @@ class RoomServiceImpl(
         return roomRepository.save(roomEntity)
     }
 
-    override fun startOfflineGame(name: String): RoomEntity {
+    override fun startOfflineGame(playerEntity: PlayerEntity): RoomEntity {
+        val player = playerRepository.findByNameAndDeletedAtNull(playerEntity.name)
+            ?: throw CustomException(HttpStatus.BAD_REQUEST)
+        player.level = playerEntity.level
+        playerRepository.save(player)
         val room = RoomEntity()
-        room.playerFirstName = name
+        room.playerFirstName = player.name
         room.isOnline = false
-        room.firstPlay = name
+        room.firstPlay = player.name
         return roomRepository.save(room)
     }
 
@@ -96,12 +103,12 @@ class RoomServiceImpl(
         val optional =
             roomRepository.findTop1ByDeletedAtNullAndIsOnlineTrueAndPlayerFirstNameNullOrPlayerSecondNameNull()
         if (optional.isEmpty) {
-            throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+            throw CustomException(HttpStatus.BAD_REQUEST, "Bad request")
         }
         val roomEntity = optional.get()
         when {
             roomEntity.playerFirstName == null && roomEntity.playerSecondName == null -> {
-                throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+                throw CustomException(HttpStatus.BAD_REQUEST, "Bad request")
             }
             roomEntity.playerFirstName == null -> {
                 roomEntity.playerFirstName = name
@@ -115,7 +122,7 @@ class RoomServiceImpl(
 
     override fun goToBox(message: String): Pair<Long, String> {
         val chessRequest =
-            JsonUtils.fromJson<ChessRequest>(message) ?: throw CustomException("Bad request", HttpStatus.BAD_REQUEST)
+            JsonUtils.fromJson<ChessRequest>(message) ?: throw CustomException(HttpStatus.BAD_REQUEST, "Bad request")
         val room = findById(chessRequest.roomId ?: 0)
         val board = room.boardString?.toBoard()
         chessRequest.run {
@@ -134,7 +141,7 @@ class RoomServiceImpl(
 
     override fun kickTheOpponent(roomEntity: RoomEntity, rivalName: String): RoomEntity {
         if (!roomEntity.isFullPlayer() || !roomEntity.removeRivalPlayerName(rivalName)) {
-            throw CustomException("", HttpStatus.BAD_REQUEST)
+            throw CustomException(HttpStatus.BAD_REQUEST, "")
         }
         return roomRepository.save(roomEntity)
     }

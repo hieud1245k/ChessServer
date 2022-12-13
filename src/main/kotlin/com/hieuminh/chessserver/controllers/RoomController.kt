@@ -1,6 +1,7 @@
 package com.hieuminh.chessserver.controllers
 
 import com.google.gson.Gson
+import com.hieuminh.chessserver.entities.PlayerEntity
 import com.hieuminh.chessserver.entities.RoomEntity
 import com.hieuminh.chessserver.services.RoomService
 import com.hieuminh.chessserver.utils.AppUtils
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 import org.springframework.web.bind.annotation.*
+import retrofit2.http.Body
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -46,8 +48,8 @@ class RoomController(
     }
 
     @PostMapping("/start-offline-game")
-    fun startOfflineGame(@RequestParam("name") name: String): ResponseEntity<RoomEntity> {
-        val roomResponse = roomService.startOfflineGame(name)
+    fun startOfflineGame(@RequestBody player: PlayerEntity): ResponseEntity<RoomEntity> {
+        val roomResponse = roomService.startOfflineGame(player)
         return ResponseEntity.ok(roomResponse)
     }
 

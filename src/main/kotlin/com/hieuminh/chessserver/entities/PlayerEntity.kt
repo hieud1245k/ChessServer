@@ -7,4 +7,6 @@ import javax.persistence.Entity
 class PlayerEntity : BaseEntity() {
     @Column(name = "name")
     var name: String = ""
+
+    var level: Int = 1
 }

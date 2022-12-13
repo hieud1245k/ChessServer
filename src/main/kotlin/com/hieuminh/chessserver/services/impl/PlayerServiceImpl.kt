@@ -22,7 +22,7 @@ class PlayerServiceImpl(
     override fun save(name: String): PlayerEntity {
         val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
         if (playerEntity != null) {
-            throw CustomException("Username \"${name}\" is exist!", HttpStatus.CONFLICT)
+            throw CustomException(HttpStatus.CONFLICT, "Username \"${name}\" is exist!")
         }
         return playerRepository.save(PlayerEntity().apply {
             this.name = name
@@ -31,14 +31,16 @@ class PlayerServiceImpl(
 
     override fun removeByName(name: String) {
         val playerEntity = playerRepository.findByNameAndDeletedAtNull(name)
-            ?: throw CustomException("", HttpStatus.NOT_FOUND)
+            ?: throw CustomException(HttpStatus.NOT_FOUND, "")
         playerEntity.deletedAt = LocalDate.now()
         playerRepository.save(playerEntity)
     }
 
     override fun gotoBoxOffline(chessRequest: ChessRequest): ChessRequest {
+        val player = playerRepository.findByNameAndDeletedAtNull(chessRequest.playerName ?: "")
+            ?: throw CustomException(HttpStatus.BAD_REQUEST)
         val room = roomService.findById(chessRequest.roomId ?: 0)
-        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet)
+        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet, player.level * 2)
         val board = (room.boardString ?: "").toBoard()
         board.play(chessRequest.from!!.toSquare(), chessRequest.to!!.toSquare())
         board.blackPlayer(minimaxPlayer)
