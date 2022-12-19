@@ -40,22 +40,27 @@ class PlayerServiceImpl(
         val player = playerRepository.findByNameAndDeletedAtNull(chessRequest.playerName ?: "")
             ?: throw CustomException(HttpStatus.BAD_REQUEST)
         val room = roomService.findById(chessRequest.roomId ?: 0)
-        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet, player.level * 2)
+        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet, player.level * 1)
         val board = (room.boardString ?: "").toBoard()
         board.play(chessRequest.from!!.toSquare(), chessRequest.to!!.toSquare())
         board.blackPlayer(minimaxPlayer)
-        val boardValue = minimaxPlayer.move(board)
-        val chessResponse = ChessRequest().apply {
-            from = Box().apply {
+        val chessResponse = ChessRequest()
+        try {
+            val boardValue = minimaxPlayer.move(board)
+            chessResponse.from = Box().apply {
                 setPosition(boardValue.from.toPosition())
             }
-            to = Box().apply {
+            chessResponse.to = Box().apply {
                 setPosition(boardValue.to.toPosition())
             }
+            board.play(boardValue)
+            room.boardString = board.toPrettyString()
+            roomService.save(room)
+        } catch (e: java.lang.ClassCastException) {
+            chessResponse.youWin = true
+        } catch (e: Exception) {
+            chessResponse.youWin = false
         }
-        board.play(boardValue)
-        room.boardString = board.toPrettyString()
-        roomService.save(room)
         return chessResponse
     }
 }

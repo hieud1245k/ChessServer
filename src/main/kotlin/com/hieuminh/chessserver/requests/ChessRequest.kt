@@ -13,6 +13,8 @@ class ChessRequest : Serializable {
 
     var checkmate: Boolean = false
 
+    var youWin: Boolean? = null
+
     fun reverse() {
         from?.y = 7 - (from?.y ?: 0)
         to?.y = 7 - (to?.y ?: 0)
