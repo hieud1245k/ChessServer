@@ -40,7 +40,7 @@ class PlayerServiceImpl(
         val player = playerRepository.findByNameAndDeletedAtNull(chessRequest.playerName ?: "")
             ?: throw CustomException(HttpStatus.BAD_REQUEST)
         val room = roomService.findById(chessRequest.roomId ?: 0)
-        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet, player.level * 3)
+        val minimaxPlayer = MinimaxPlayer(PieceColor.BlackSet, player.level * 2)
         val board = (room.boardString ?: "").toBoard()
         board.play(chessRequest.from!!.toSquare(), chessRequest.to!!.toSquare())
         board.blackPlayer(minimaxPlayer)
