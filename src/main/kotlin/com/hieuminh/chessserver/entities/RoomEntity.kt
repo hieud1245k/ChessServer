@@ -37,4 +37,11 @@ class RoomEntity : BaseEntity() {
         }
         return false
     }
+
+    fun getRivalPlayerName(name: String?): String? {
+        if (name.equals(playerFirstName)) {
+            return playerSecondName
+        }
+        return playerFirstName
+    }
 }

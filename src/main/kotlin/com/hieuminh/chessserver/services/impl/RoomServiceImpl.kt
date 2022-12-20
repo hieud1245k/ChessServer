@@ -125,13 +125,13 @@ class RoomServiceImpl(
             JsonUtils.fromJson<ChessRequest>(message) ?: throw CustomException(HttpStatus.BAD_REQUEST, "Bad request")
         val room = findById(chessRequest.roomId ?: 0)
         val board = room.boardString?.toBoard()
-        chessRequest.run {
-            try {
-                board?.play(from!!.toSquare(), to!!.toSquare())
-            } catch (e: Exception) {
-                e.printStackTrace()
-                // TODO: Handle later
-            }
+        val firstPlayer = chessRequest.playerName == room.playerSecondName // PlayerName is the name of rival player
+        try {
+            board?.play(chessRequest.from!!.toSquare(firstPlayer), chessRequest.to!!.toSquare(firstPlayer))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            chessRequest.isInValidMove = true
+            return Pair(room.id, JsonUtils.toJson(chessRequest))
         }
         room.boardString = board?.toPrettyString()
         roomRepository.save(room)

@@ -3,7 +3,7 @@ package com.hieuminh.chessserver.entities
 import com.hieuminh.chessserver.boardGame.board.Square
 import com.hieuminh.chessserver.enums.ChessmanType
 
-class Box{
+class Box {
     var x: Int = 0
     var y: Int = 0
     var chessmanType: ChessmanType? = null
@@ -14,7 +14,10 @@ class Box{
         y = pair.second
     }
 
-    fun toSquare(): Square {
-        return Square((7 - y) * 8 + x)
+    fun toSquare(firstPlayer: Boolean = true): Square {
+        if (firstPlayer) {
+            return Square((7 - y) * 8 + x)
+        }
+        return Square(y * 8 + x)
     }
 }
